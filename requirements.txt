@@ -1,5 +1,5 @@
 streamlit
-catboost
-scikit-learn
+catboost==1.2.8
+scikit-learn==1.5.1
+numpy==1.26.4
 joblib
-numpy
