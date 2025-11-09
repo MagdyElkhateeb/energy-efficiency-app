@@ -1,19 +1,23 @@
 import streamlit as st
-import joblib
+import pickle
 import numpy as np
 import pandas as pd
 
 
-model = joblib.load('best_catboost_model.joblib')
+filename = 'best_catboost_model.pkl'
+
+with open(filename, 'rb') as file:
+    model = pickle.load(file)
+
 
 st.title("🏠 Energy Efficiency Prediction App")
 st.write("Enter building features to predict **Energy Efficiency (Heating & Cooling Load)**")
 
 
 relative_compactness = st.slider('Relative Compactness', 0.6, 1.0, 0.8)
-surface_area = st.number_input('Surface Area', 400.0, 900.0, 600.0)
-wall_area = st.number_input('Wall Area', 200.0, 400.0, 300.0)
-roof_area = st.number_input('Roof Area', 100.0, 250.0, 150.0)
+surface_area = st.number_input('Surface Area', min_value=0.0, value=600.0)
+wall_area = st.number_input('Wall Area', min_value=0.0, value=300.0)
+roof_area = st.number_input('Roof Area', min_value=0.0, value=150.0)
 overall_height = st.selectbox('Overall Height', [3.5, 7.0])
 orientation = st.selectbox('Orientation', [2, 3, 4, 5])
 glazing_area = st.slider('Glazing Area', 0.0, 0.5, 0.25)
