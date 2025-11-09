@@ -2,17 +2,22 @@ import streamlit as st
 import joblib 
 import numpy as np
 import pandas as pd 
-
-
+import os 
 filename = 'best_catboost_model.joblib' 
+
+if not os.path.exists(filename):
+    st.error(f"FATAL ERROR: Model file '{filename}' not found in the repository.")
+    st.error("Please ensure 'best_catboost_model.joblib' is in the root of your GitHub repo.")
+    st.stop()
 
 try:
     model = joblib.load(filename)
 except FileNotFoundError:
-    st.error(f"Error: Model file '{filename}' not found. Please ensure it is uploaded to your GitHub repository.")
+    st.error(f"Error: Model file '{filename}' not found.")
     st.stop()
 except Exception as e:
-    st.error(f"Error loading model: {e}. Check CatBoost version in requirements.txt.")
+    st.error(f"Error loading model: {e}.")
+    st.error("This often happens due to a version mismatch. Ensure 'runtime.txt' is 'python-3.11' and 'catboost' is in requirements.txt.")
     st.stop()
 
 
@@ -21,11 +26,10 @@ st.write("Enter building features to predict **Energy Efficiency (Heating & Cool
 st.markdown("---")
 
 
-relative_compactness = st.slider('Relative Compactness', 0.6, 1.0, 0.8) 
+relative_compactness = st.slider('Relative Compactness', 0.6, 1.0, 0.8)
 surface_area = st.number_input('Surface Area', value=600.0)
 wall_area = st.number_input('Wall Area', value=300.0)
 roof_area = st.number_input('Roof Area', value=150.0)
-
 overall_height = st.selectbox('Overall Height', [3.5, 7.0])
 orientation = st.selectbox('Orientation', [2, 3, 4, 5], help="Direction of the main facade.")
 glazing_area = st.slider('Glazing Area (Ratio)', 0.0, 0.5, 0.25, help="Area of windows relative to floor area.")
@@ -45,24 +49,18 @@ if st.button("🔮 Predict Energy Efficiency", type="primary"):
     }])
 
     try:
-
         prediction_result = model.predict(input_df)[0]
-        
         st.success("✅ Prediction Successful!")
         
         if isinstance(prediction_result, np.ndarray) and prediction_result.shape == (2,):
             heating_load = prediction_result[0]
             cooling_load = prediction_result[1]
-            
             st.metric(label="🌡️ Predicted Heating Load", value=f"{heating_load:.2f}")
             st.metric(label="❄️ Predicted Cooling Load", value=f"{cooling_load:.2f}")
-            
         elif isinstance(prediction_result, (float, int, np.floating)):
              st.metric(label="📊 Predicted Energy Load", value=f"{prediction_result:.2f}")
-             
         else:
              st.info(f"Prediction made, but result format is unusual: {prediction_result}")
 
-
     except Exception as e:
-        st.error(f"⚠️ An error occurred during prediction. Please check your GitHub requirements.txt for all necessary libraries (e.g., catboost). Details: {e}")
+        st.error(f"⚠️ An error occurred during prediction: {e}")
